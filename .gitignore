@@ -10,10 +10,11 @@ __pycache__/
 # Virtual environments
 venv/
 env/
+.env/
 ENV/
 .venv/
 .ENV/
-.venv-1
+.venv-1/
 
 # Packaging / build
 *.egg-info/
