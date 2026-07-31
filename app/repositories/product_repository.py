@@ -1,3 +1,4 @@
+# repositories/product_repository.py
 from typing import Optional, Sequence, List
 from datetime import datetime, timedelta
 
@@ -24,6 +25,15 @@ class ProductRepository:
             update(Product)
             .where(Product.id == product_id, Product.stock >= quantity)
             .values(stock=Product.stock - quantity)
+        )
+        await self.db.commit()
+        return result.rowcount > 0
+
+    async def increase_stock(self, product_id: int, quantity: int) -> bool:
+        result = await self.db.execute(
+            update(Product)
+            .where(Product.id == product_id)
+            .values(stock=Product.stock + quantity)
         )
         await self.db.commit()
         return result.rowcount > 0

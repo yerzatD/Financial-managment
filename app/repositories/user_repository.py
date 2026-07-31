@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from typing import Optional
 from ..auth import hash_password
 from ..models.User import User
 from ..schemas.user import UserCreate,UserUpdate
@@ -21,17 +21,17 @@ class UserRepository:
         await self.db.refresh(new_user)
         return new_user
 
-    async def get_user_by_email(self,email : str)-> User:
+    async def get_user_by_email(self,email : str)-> Optional[User]:
         user = await self.db.execute(select(User).where(User.email == email))
         return user.scalar_one_or_none()
         
 
-    async def get_user_by_number(self,phone : str)-> User:
+    async def get_user_by_number(self,phone : str)-> Optional[User]:
         user = await self.db.execute(select(User).where(User.phone == phone))
         return user.scalar_one_or_none()
         
 
-    async def get_me(self,user_id : int) -> User:
+    async def get_me(self,user_id : int) -> Optional[User]:
         user = await self.db.execute(select(User).where(User.id == user_id))
         return user.scalar_one_or_none()
 
@@ -57,7 +57,7 @@ class UserRepository:
         return user
 
 
-    async def get_by_username(self,username : str) -> User:
+    async def get_by_username(self,username : str) -> Optional[User]:
             user = await self.db.execute(select(User).where(User.username == username))
             return user.scalar_one_or_none()
     

@@ -9,6 +9,6 @@ class ProductResponse(BaseModel):
     name: str
     description: Optional[str]
     price: float
-    image_url: str
+    image_url: Optional[str]
     stock: int
     created_at: datetime

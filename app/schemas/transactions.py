@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 class TransferCreate(BaseModel):
-    to_account_id: int
+    to_phone: str
     amount: float = Field(gt=0)  # запрещаем 0 и отрицательные переводы
     description: Optional[str] = None
     idempotency_key: str

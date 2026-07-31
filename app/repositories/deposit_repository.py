@@ -1,6 +1,5 @@
 from typing import Optional, Sequence
-from datetime import datetime, timedelta
-
+from datetime import datetime, timezone, timedelta
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,7 +13,7 @@ class DepositRepository:
     async def create_deposit(
         self, account_id: int, principal: float, rate: float, term_months: int
     ) -> Deposit:
-        start = datetime.utcnow()
+        start = datetime.now(timezone.utc)
         end_date = start + timedelta(days=term_months * 30)
 
         deposit = Deposit(
