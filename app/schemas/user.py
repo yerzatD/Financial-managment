@@ -24,3 +24,7 @@ class UserResponse(BaseModel):
     email: EmailStr
     avatar: Optional[str] = None
     balance: float
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str

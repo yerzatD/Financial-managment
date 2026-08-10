@@ -10,7 +10,7 @@ class Transaction(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     amount = Column(Float, nullable=False)
     type = Column(String, nullable=False)  
-    status = Column(String, nullable=False)
+    status = Column(String, nullable=False,default="Finished")
     category = Column(String, nullable=True)
     description = Column(String, nullable=True)
     spent_at = Column(DateTime, nullable=True)

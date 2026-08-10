@@ -14,3 +14,8 @@ class Category(str, Enum):
     SHOPPING = "shopping"
     TRAVEL = "travel"
     OTHER = "other"
+
+class Status(str, Enum):
+    in_progress =  "In Progress"
+    finished = "Finished"
+    
