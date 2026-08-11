@@ -15,8 +15,8 @@ class CreateTransaction(TransactionBase):
 
 class TransactionUpdate(BaseModel):
     amount: Optional[float] = None
-    type: Optional[str] = None
-    category: Optional[str] = None
+    type: TypeOfTransaction = None
+    category: Category = None
     description: Optional[str] = None
     spent_at : Optional[datetime] = None
 
