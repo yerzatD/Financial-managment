@@ -5,7 +5,7 @@ from pydantic import SecretStr
 class Settings(BaseSettings):
     app_name: str = "FastAPI Shop"
     debug: bool = True
-    database_url: str = "sqlite+aiosqlite:///./finance.db"
+    database_url: str = "sqlite:///./finance.db"
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
     secret_key: SecretStr
     algorithm: str = "HS256"

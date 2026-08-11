@@ -6,7 +6,7 @@ from .enum import *
 class TransactionBase(BaseModel):
     amount: float
     type: TypeOfTransaction
-    category: Category | None
+    category: Optional[Category] = None
     description: Optional[str] = None
     spent_at : datetime
 
@@ -15,8 +15,8 @@ class CreateTransaction(TransactionBase):
 
 class TransactionUpdate(BaseModel):
     amount: Optional[float] = None
-    type: TypeOfTransaction = None
-    category: Category = None
+    type: Optional[TypeOfTransaction] = None
+    category: Optional[Category] = None
     description: Optional[str] = None
     spent_at : Optional[datetime] = None
 

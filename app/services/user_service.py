@@ -19,7 +19,7 @@ class UserService:
         if existing is not None or existing1 is not None:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="User already registred")
         user = User(
-            useername = data.username,
+            username = data.username,
             email = data.email,
             hashed_password=hash_password(data.password),
             avatar = data.avatar,
@@ -31,7 +31,7 @@ class UserService:
         return UserResponse.model_validate(user)
 
     def login_user(self,form_data : OAuth2PasswordRequestForm) -> Token:
-        user = self.db.query(User).filter(User.username == form_data.username)
+        user = self.db.query(User).filter(User.username == form_data.username).first()
         if user is None or not verify_password(form_data.password, user.hashed_password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -40,7 +40,7 @@ class UserService:
             )
 
         access_token = create_access_token(data={"sub" : str(user.id)})
-        return Token.model_validate(access_token = access_token, token_type ="bearer")
+        return Token(access_token=access_token, token_type="bearer")
 
 
     def update_user(self, user_id: int, user_update: UserUpdate) -> UserResponse:
@@ -75,8 +75,10 @@ class UserService:
         return UserResponse.model_validate(user)
 
 
-    def get_all_users(self,user_id : int) -> list[UserResponse]:
-        Users = self.db.query(User).all()
-        return List(user for user in Users)
+    def get_all_users(self, user: User) -> list[UserResponse]:
+        if user.role != "admin":
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You are not admin")
+        users = self.db.query(User).all()
+        return [UserResponse.model_validate(u) for u in users]
         
     

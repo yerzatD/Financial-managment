@@ -22,10 +22,11 @@ class TransactionService:
             spent_at = data.spent_at,
             )
         user = self.db.query(User).filter(User.id == user_id).first()
-        if data.type == "income":
+        if user is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        if data.type == TypeOfTransaction.INCOME:
             user.balance += data.amount
-
-        if data.type == "expense":
+        elif data.type == TypeOfTransaction.EXPENSE:
             user.balance -= data.amount
         self.db.add(transaction)
         self.db.commit()
@@ -33,33 +34,43 @@ class TransactionService:
         return TransactionResponse.model_validate(transaction)
 
 
-    def update_transaction(self, user_id : int, data : TransactionUpdate) -> TransactionResponse:
-        updated = Transaction(
-            user_id = user_id,
-            amount = data.amount,
-            type = data.type,
-            category = data.category,
-            description = data.description,
-            spent_at = data.spent_at,
-            )
+    def update_transaction(self, user_id: int, transaction_id: int, data: TransactionUpdate) -> TransactionResponse:
+        transaction = self.db.query(Transaction).filter(
+            Transaction.id == transaction_id, Transaction.user_id == user_id
+        ).first()
+        if transaction is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transaction not found")
 
-        self.db.add(updated)
+        user = self.db.query(User).filter(User.id == user_id).first()
+
+        if transaction.type == TypeOfTransaction.INCOME:
+            user.balance -= transaction.amount
+        elif transaction.type == TypeOfTransaction.EXPENSE:
+            user.balance += transaction.amount
+
+        update_data = data.model_dump(exclude_unset=True)
+        for field, value in update_data.items():
+            setattr(transaction, field, value)
+
+        if transaction.type == TypeOfTransaction.INCOME:
+            user.balance += transaction.amount
+        elif transaction.type == TypeOfTransaction.EXPENSE:
+            user.balance -= transaction.amount
+
         self.db.commit()
-        self.db.refresh(updated)
-        return TransactionResponse.model_validate(updated)
+        self.db.refresh(transaction)
+        return TransactionResponse.model_validate(transaction)
 
     def get_all_transaction(self,user_id : int) -> list[TransactionResponse]:
         transactions = self.db.query(Transaction).filter(Transaction.user_id == user_id).all()
-        if transactions is None:
-            raise HTTPException(status_code=404, detail="Transactions not found")
-        return List(TransactionResponse.model_validate(tran) for tran in transactions)
+        return [TransactionResponse.model_validate(tran) for tran in transactions]
 
-    def get_transaction_by_category(self,user_id:int,category:Category) -> list(TransactionResponse):
-        transactions = self.db.query(Transaction).filter((Transaction.user_id == user_id)and(Transaction.category == category)).all()
-        return List(TransactionResponse.model_validate(tran) for tran in transactions)
+    def get_transaction_by_category(self,user_id:int,category:Category):
+        transactions = self.db.query(Transaction).filter(Transaction.user_id == user_id,Transaction.category == category).all()
+        return [TransactionResponse.model_validate(tran) for tran in transactions]
 
     def get_transaction_by_type(self,user_id : int, type : TypeOfTransaction):
-        transactions = self.db.query(Transaction).filter((Transaction.user_id == user_id)and(Transaction.type == type)).all()
-        return List(TransactionResponse.model_validate(tran) for tran in transactions)
+        transactions = self.db.query(Transaction).filter(Transaction.user_id == user_id,Transaction.type == type).all()
+        return [TransactionResponse.model_validate(tran) for tran in transactions]
 
     
