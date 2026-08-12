@@ -61,7 +61,24 @@ class TransactionService:
         self.db.refresh(transaction)
         return TransactionResponse.model_validate(transaction)
 
-    def get_all_transaction(self,user_id : int) -> list[TransactionResponse]:
+    def delete_transaction(self, user_id: int, transaction_id: int) -> None:
+        transaction = self.db.query(Transaction).filter(
+            Transaction.id == transaction_id, Transaction.user_id == user_id
+        ).first()
+        if transaction is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transaction not found")
+
+        user = self.db.query(User).filter(User.id == user_id).first()
+
+        if transaction.type == TypeOfTransaction.INCOME:
+            user.balance -= transaction.amount
+        elif transaction.type == TypeOfTransaction.EXPENSE:
+            user.balance += transaction.amount
+
+        self.db.delete(transaction)
+        self.db.commit()
+
+    def get_all_transactions(self,user_id : int) -> list[TransactionResponse]:
         transactions = self.db.query(Transaction).filter(Transaction.user_id == user_id).all()
         return [TransactionResponse.model_validate(tran) for tran in transactions]
 
@@ -73,4 +90,24 @@ class TransactionService:
         transactions = self.db.query(Transaction).filter(Transaction.user_id == user_id,Transaction.type == type).all()
         return [TransactionResponse.model_validate(tran) for tran in transactions]
 
-    
+    def get_transaction_summary(self, user_id: int) -> dict:
+        transactions = self.db.query(Transaction).filter(Transaction.user_id == user_id).all()
+
+        total_income = sum(t.amount for t in transactions if t.type == TypeOfTransaction.INCOME)
+        total_expense = sum(t.amount for t in transactions if t.type == TypeOfTransaction.EXPENSE)
+
+        categories_summary: dict = {}
+        for t in transactions:
+            categories_summary.setdefault(t.category, 0)
+            if t.type == TypeOfTransaction.INCOME:
+                categories_summary[t.category] += t.amount
+            else:
+                categories_summary[t.category] -= t.amount
+
+        return {
+            "total_income": total_income,
+            "total_expense": total_expense,
+            "balance": total_income - total_expense,
+            "categories_summary": categories_summary,
+            "transaction_count": len(transactions),
+        }
