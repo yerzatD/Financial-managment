@@ -1,6 +1,3 @@
-Below is the complete `README.md` file content. Copy it and save as `README.md` in the root of your project.
-
-```markdown
 # AI Finance Manager
 
 A personal finance management system with a **FastAPI** backend and a **Telegram bot** interface.  
